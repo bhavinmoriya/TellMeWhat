@@ -41,8 +41,6 @@ plt.xlabel("Value")
 plt.ylabel("Density")
 plt.show()
 ```
-**Output**:
-![Exponential Distribution Histogram](https://via.placeholder.com/400x300?text=Exponential+Distribution)
 
 ---
 
