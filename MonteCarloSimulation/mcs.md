@@ -244,7 +244,6 @@ plt.ylabel("Frequency")
 plt.legend()
 plt.show()
 ```
-![Histogram of Final Values](https://via.placeholder.com/600x400?text=Histogram)
 
 ### **2. Convergence Plot**
 Check if the simulation has converged.
@@ -259,7 +258,6 @@ plt.xlabel("Number of Simulations")
 plt.ylabel("Estimated Final Value ($)")
 plt.show()
 ```
-![Convergence Plot](https://via.placeholder.com/600x400?text=Convergence+Plot)
 
 ---
 
