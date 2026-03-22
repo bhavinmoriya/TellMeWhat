@@ -1,3 +1,4 @@
+
 # **Monte Carlo Simulation: A Practical Guide with Python**
 
 Monte Carlo simulation is a **computational technique** that uses **random sampling** to model the probability of different outcomes in a process that might be affected by uncertainty. It’s widely used in:
@@ -49,7 +50,6 @@ plt.show()
 ```
 Estimated Pi: 3.1416
 ```
-![Monte Carlo Pi Estimation](https://via.placeholder.com/400x400?text=Pi+Estimation)
 
 ---
 
