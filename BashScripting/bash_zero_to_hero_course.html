@@ -1,0 +1,353 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-mono); }
+
+  .shell-header {
+    background: #0d1117;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #ff5f56; }
+  .dot.y { background: #ffbd2e; }
+  .dot.g { background: #27c93f; }
+  .shell-title { color: #8b949e; font-size: 12px; margin-left: auto; margin-right: auto; font-family: var(--font-mono); }
+
+  .course-wrap {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    background: #161b22;
+    border-bottom: 0.5px solid #30363d;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #8b949e;
+    font-size: 11.5px;
+    font-family: var(--font-mono);
+    padding: 10px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn:hover { color: #e6edf3; }
+  .tab-btn.active { color: #58a6ff; border-bottom-color: #58a6ff; }
+
+  .content-area {
+    background: #0d1117;
+    padding: 20px 20px 24px;
+    min-height: 420px;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #3fb950;
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+  }
+
+  .cmd-card {
+    background: #161b22;
+    border: 0.5px solid #30363d;
+    border-radius: var(--border-radius-md);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .cmd-card:hover { border-color: #58a6ff; background: #1c2230; }
+  .cmd-card.expanded { border-color: #3fb950; background: #0d1f1a; }
+
+  .cmd-top { display: flex; align-items: baseline; gap: 10px; }
+  .cmd-name {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #f0883e;
+  }
+  .cmd-short { font-size: 12px; color: #8b949e; flex: 1; }
+  .expand-icon { font-size: 11px; color: #58a6ff; flex-shrink: 0; }
+
+  .cmd-detail {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid #30363d;
+  }
+  .cmd-card.expanded .cmd-detail { display: block; }
+
+  .cmd-syntax {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: #58a6ff;
+    background: #0d1117;
+    border: 0.5px solid #30363d;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    white-space: pre;
+  }
+  .cmd-desc { font-size: 12.5px; color: #c9d1d9; line-height: 1.6; font-family: var(--font-sans); }
+  .cmd-flags { margin-top: 8px; }
+  .flag-row { display: flex; gap: 8px; margin-top: 4px; }
+  .flag { font-family: var(--font-mono); font-size: 11px; color: #d2a8ff; min-width: 60px; }
+  .flag-desc { font-size: 11.5px; color: #8b949e; }
+
+  .tip-box {
+    background: #161b22;
+    border-left: 3px solid #3fb950;
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+    padding: 10px 14px;
+    margin-top: 12px;
+  }
+  .tip-label { font-size: 10px; color: #3fb950; font-family: var(--font-mono); margin-bottom: 4px; }
+  .tip-text { font-size: 12px; color: #c9d1d9; font-family: var(--font-mono); }
+
+  .progress-bar-wrap { display: flex; gap: 4px; margin-bottom: 18px; }
+  .progress-seg { height: 3px; flex: 1; border-radius: 2px; background: #30363d; transition: background 0.3s; }
+  .progress-seg.done { background: #3fb950; }
+
+  .hidden { display: none; }
+</style>
+
+<h2 class="sr-only">Bash Zero to Hero — interactive command reference course with expandable command cards organized by module</h2>
+
+<div class="course-wrap">
+  <div class="shell-header">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <span class="shell-title">bash — zero to hero</span>
+  </div>
+
+  <div class="nav-tabs" id="navTabs"></div>
+
+  <div class="content-area">
+    <div class="progress-bar-wrap" id="progressBar"></div>
+    <div class="section-label" id="sectionLabel"></div>
+    <div class="cmd-grid" id="cmdGrid"></div>
+  </div>
+</div>
+
+<script>
+const modules = [
+  {
+    tab: "00 · basics",
+    label: "$ module_00 — shell fundamentals",
+    cmds: [
+      { name: "pwd", short: "print working directory", syntax: "pwd", desc: "Outputs the absolute path of your current directory. Your GPS in the filesystem.", flags: [] },
+      { name: "ls", short: "list directory contents", syntax: "ls [options] [path]", desc: "Lists files and directories. One of the most-used commands in daily work.", flags: [{ f: "-l", d: "long format with permissions, size, date" }, { f: "-a", d: "show hidden files (dotfiles)" }, { f: "-h", d: "human-readable sizes (KB, MB)" }, { f: "-R", d: "recursive listing" }], tip: "ls -lah  →  combines long, all, human-readable" },
+      { name: "cd", short: "change directory", syntax: "cd [path]", desc: "Navigate the filesystem. Without an argument, jumps to your home directory.", flags: [{ f: "..", d: "go up one level" }, { f: "~", d: "home directory shortcut" }, { f: "-", d: "return to previous directory" }] },
+      { name: "echo", short: "print text to terminal", syntax: 'echo [options] "text"', desc: "Outputs strings to stdout. Fundamental for scripts, debugging, and writing to files.", flags: [{ f: "-n", d: "no trailing newline" }, { f: "-e", d: "interpret escape sequences (\\n, \\t)" }], tip: 'echo $HOME   →   print environment variable' },
+      { name: "man", short: "manual pages", syntax: "man [command]", desc: "Opens the full manual for any command. Press q to quit, / to search.", flags: [] },
+      { name: "help", short: "builtin help", syntax: "help [builtin]", desc: "Shows help for bash builtins (cd, echo, etc.). man won't work for builtins — use this instead.", flags: [] },
+      { name: "history", short: "command history", syntax: "history [n]", desc: "Lists previously run commands. Pipe with grep to find old commands fast.", flags: [{ f: "-c", d: "clear history" }], tip: "!42  →  re-run command number 42 from history" },
+      { name: "clear", short: "clear terminal screen", syntax: "clear", desc: "Clears the terminal display. Shortcut: Ctrl+L.", flags: [] },
+    ]
+  },
+  {
+    tab: "01 · files",
+    label: "$ module_01 — file operations",
+    cmds: [
+      { name: "cp", short: "copy files/directories", syntax: "cp [options] src dest", desc: "Copies files or directories from source to destination.", flags: [{ f: "-r", d: "recursive (for directories)" }, { f: "-i", d: "interactive, prompt before overwrite" }, { f: "-v", d: "verbose output" }, { f: "-p", d: "preserve timestamps and permissions" }] },
+      { name: "mv", short: "move or rename", syntax: "mv [options] src dest", desc: "Moves files or renames them. If dest is a directory, moves src into it.", flags: [{ f: "-i", d: "prompt before overwrite" }, { f: "-v", d: "verbose" }] },
+      { name: "rm", short: "remove files", syntax: "rm [options] file", desc: "Deletes files permanently — no Trash. Use with care.", flags: [{ f: "-r", d: "recursive (delete directories)" }, { f: "-f", d: "force, no prompts" }, { f: "-i", d: "interactive confirmation" }], tip: "Never run rm -rf / — deletes everything" },
+      { name: "mkdir", short: "make directory", syntax: "mkdir [options] name", desc: "Creates one or more new directories.", flags: [{ f: "-p", d: "create parent dirs as needed" }, { f: "-v", d: "verbose output" }] },
+      { name: "touch", short: "create/update file", syntax: "touch filename", desc: "Creates an empty file, or updates its timestamp if it already exists.", flags: [] },
+      { name: "find", short: "search files", syntax: "find [path] [expression]", desc: "Recursively searches for files and directories matching criteria.", flags: [{ f: "-name", d: 'match by name, e.g. -name "*.py"' }, { f: "-type", d: "f=file, d=directory" }, { f: "-mtime", d: "modified N days ago" }, { f: "-exec", d: "run command on results" }], tip: 'find . -name "*.log" -mtime +7 -delete' },
+      { name: "ln", short: "create links", syntax: "ln [options] src link", desc: "Creates hard or symbolic links. Symlinks are like shortcuts.", flags: [{ f: "-s", d: "create symbolic (soft) link" }, { f: "-f", d: "force overwrite existing link" }] },
+      { name: "stat", short: "file metadata", syntax: "stat file", desc: "Shows detailed metadata: size, inode, permissions, access/modification times.", flags: [] },
+    ]
+  },
+  {
+    tab: "02 · text",
+    label: "$ module_02 — text processing",
+    cmds: [
+      { name: "cat", short: "concatenate/print files", syntax: "cat [options] file", desc: "Reads files and prints to stdout. Also used to concatenate multiple files.", flags: [{ f: "-n", d: "number all lines" }, { f: "-A", d: "show special characters" }] },
+      { name: "grep", short: "search text patterns", syntax: "grep [options] pattern file", desc: "Searches for patterns using regular expressions. One of the most powerful text tools.", flags: [{ f: "-i", d: "case-insensitive" }, { f: "-r", d: "recursive search in dirs" }, { f: "-n", d: "show line numbers" }, { f: "-v", d: "invert match (exclude)" }, { f: "-E", d: "extended regex" }], tip: 'grep -rn "TODO" .   →   find all TODOs in project' },
+      { name: "sed", short: "stream editor", syntax: "sed 's/old/new/g' file", desc: "Performs text transformations on streams or files. Replace, delete, insert lines.", flags: [{ f: "-i", d: "edit file in-place" }, { f: "-n", d: "suppress default output" }, { f: "-E", d: "extended regex" }], tip: "sed -i 's/foo/bar/g' file.txt" },
+      { name: "awk", short: "text pattern processing", syntax: "awk '{print $1}' file", desc: "A full programming language for text processing. Splits lines into fields automatically.", flags: [{ f: "-F", d: 'field separator: -F","' }, { f: "-v", d: "set variable: -v OFS=," }], tip: 'awk -F"," \'{print $2}\' data.csv' },
+      { name: "cut", short: "extract columns", syntax: "cut [options] file", desc: "Extracts sections from each line of files by character or field.", flags: [{ f: "-d", d: "delimiter character" }, { f: "-f", d: "fields to select, e.g. -f1,3" }, { f: "-c", d: "character positions" }] },
+      { name: "sort", short: "sort lines", syntax: "sort [options] file", desc: "Sorts lines of text files alphabetically or numerically.", flags: [{ f: "-n", d: "numeric sort" }, { f: "-r", d: "reverse order" }, { f: "-u", d: "unique lines only" }, { f: "-k", d: "sort by key/column" }] },
+      { name: "uniq", short: "filter duplicate lines", syntax: "uniq [options] file", desc: "Removes or counts consecutive duplicate lines. Combine with sort for full dedup.", flags: [{ f: "-c", d: "prefix count of occurrences" }, { f: "-d", d: "only show duplicates" }], tip: "sort file.txt | uniq -c | sort -rn" },
+      { name: "wc", short: "word/line count", syntax: "wc [options] file", desc: "Counts lines, words, and bytes in files.", flags: [{ f: "-l", d: "lines only" }, { f: "-w", d: "words only" }, { f: "-c", d: "bytes only" }] },
+      { name: "head", short: "first N lines", syntax: "head [-n N] file", desc: "Prints the first 10 lines (default) or N lines of a file.", flags: [{ f: "-n N", d: "print first N lines" }] },
+      { name: "tail", short: "last N lines", syntax: "tail [options] file", desc: "Prints the last N lines. Critical for reading log files in real time.", flags: [{ f: "-n N", d: "last N lines" }, { f: "-f", d: "follow: stream new appended content" }], tip: "tail -f /var/log/syslog   →   live log monitoring" },
+    ]
+  },
+  {
+    tab: "03 · pipes",
+    label: "$ module_03 — pipes & redirection",
+    cmds: [
+      { name: "|", short: "pipe output to next command", syntax: "cmd1 | cmd2", desc: "Sends stdout of cmd1 as stdin to cmd2. The core of Unix philosophy: small tools chained together.", flags: [], tip: "ps aux | grep python | awk '{print $2}'" },
+      { name: ">", short: "redirect output to file", syntax: "cmd > file", desc: "Writes stdout to a file, overwriting it. Creates the file if it doesn't exist.", flags: [] },
+      { name: ">>", short: "append output to file", syntax: "cmd >> file", desc: "Appends stdout to a file rather than overwriting. Safe for log accumulation.", flags: [] },
+      { name: "<", short: "redirect file to stdin", syntax: "cmd < file", desc: "Feeds file content as stdin to a command.", flags: [] },
+      { name: "2>", short: "redirect stderr", syntax: "cmd 2> error.log", desc: "Redirects standard error to a file, separate from stdout.", flags: [], tip: "cmd > out.log 2>&1   →   merge stderr into stdout" },
+      { name: "tee", short: "split output to file + stdout", syntax: "cmd | tee file", desc: "Reads from stdin and writes to both stdout and a file simultaneously.", flags: [{ f: "-a", d: "append instead of overwrite" }] },
+      { name: "xargs", short: "build commands from stdin", syntax: "cmd | xargs cmd2", desc: "Converts stdin lines into arguments for another command. Essential for batch operations.", flags: [{ f: "-I {}", d: "placeholder: xargs -I{} mv {} dest/" }, { f: "-n N", d: "N args per execution" }, { f: "-P N", d: "parallel processes" }], tip: 'find . -name "*.tmp" | xargs rm' },
+      { name: "&&", short: "run if previous succeeded", syntax: "cmd1 && cmd2", desc: "Executes cmd2 only if cmd1 exits with code 0 (success).", flags: [], tip: "make && ./run_tests.sh" },
+      { name: "||", short: "run if previous failed", syntax: "cmd1 || cmd2", desc: "Executes cmd2 only if cmd1 fails (non-zero exit code).", flags: [] },
+    ]
+  },
+  {
+    tab: "04 · perms",
+    label: "$ module_04 — permissions & ownership",
+    cmds: [
+      { name: "chmod", short: "change file permissions", syntax: "chmod [mode] file", desc: "Sets read/write/execute permissions. Use octal (755) or symbolic (u+x) notation.", flags: [{ f: "-R", d: "recursive" }], tip: "chmod 755 script.sh   →   rwxr-xr-x" },
+      { name: "chown", short: "change owner", syntax: "chown user:group file", desc: "Changes the owner and group of a file or directory.", flags: [{ f: "-R", d: "recursive" }] },
+      { name: "umask", short: "default permission mask", syntax: "umask [mask]", desc: "Sets the default permission mask for newly created files. umask 022 → new files get 644.", flags: [] },
+      { name: "sudo", short: "run as superuser", syntax: "sudo [command]", desc: "Executes a command with root privileges. Requires your password and sudo group membership.", flags: [{ f: "-u", d: "run as different user" }, { f: "-i", d: "open root shell" }] },
+      { name: "su", short: "switch user", syntax: "su [username]", desc: "Switches to another user account. su - opens a full login shell for that user.", flags: [] },
+      { name: "id", short: "user identity info", syntax: "id [user]", desc: "Displays UID, GID, and group memberships for the current or specified user.", flags: [] },
+      { name: "groups", short: "list user groups", syntax: "groups [user]", desc: "Lists all groups the current (or specified) user belongs to.", flags: [] },
+    ]
+  },
+  {
+    tab: "05 · process",
+    label: "$ module_05 — process management",
+    cmds: [
+      { name: "ps", short: "list running processes", syntax: "ps [options]", desc: "Shows a snapshot of current processes. ps aux shows all processes with CPU and memory usage.", flags: [{ f: "aux", d: "all processes, all users, detailed" }, { f: "-ef", d: "full format listing" }] },
+      { name: "top", short: "live process monitor", syntax: "top", desc: "Interactive real-time view of running processes, CPU and memory usage. Press q to quit.", flags: [] },
+      { name: "htop", short: "enhanced process viewer", syntax: "htop", desc: "Visual, color-coded process monitor. May need installation: sudo apt install htop.", flags: [] },
+      { name: "kill", short: "terminate process by PID", syntax: "kill [signal] PID", desc: "Sends a signal to a process. Default is SIGTERM (graceful). Use -9 for force kill.", flags: [{ f: "-9", d: "SIGKILL — force terminate" }, { f: "-15", d: "SIGTERM — graceful (default)" }, { f: "-l", d: "list all signal names" }] },
+      { name: "pkill", short: "kill by process name", syntax: "pkill [options] name", desc: "Kills processes by name instead of PID. More convenient than ps | grep | kill.", flags: [{ f: "-f", d: "match full command line" }, { f: "-u", d: "match by user" }] },
+      { name: "jobs", short: "list background jobs", syntax: "jobs", desc: "Shows jobs running in the background of the current shell session.", flags: [] },
+      { name: "bg", short: "resume job in background", syntax: "bg [%job]", desc: "Resumes a suspended job in the background. Ctrl+Z suspends; bg resumes it.", flags: [] },
+      { name: "fg", short: "bring job to foreground", syntax: "fg [%job]", desc: "Brings a background job back to the foreground of the terminal.", flags: [] },
+      { name: "nohup", short: "run immune to hangup", syntax: "nohup cmd &", desc: "Runs a command that persists after terminal logout. Output goes to nohup.out.", flags: [], tip: "nohup python train.py > train.log 2>&1 &" },
+      { name: "nice", short: "set process priority", syntax: "nice -n N cmd", desc: "Launches a process with a specified niceness (-20 high priority, 19 low priority).", flags: [] },
+    ]
+  },
+  {
+    tab: "06 · scripting",
+    label: "$ module_06 — scripting essentials",
+    cmds: [
+      { name: "#!/bin/bash", short: "shebang line", syntax: "#!/bin/bash", desc: "First line of every script. Tells the OS which interpreter to use. Always include it.", flags: [] },
+      { name: "variables", short: "assign & use variables", syntax: "NAME=value ; echo $NAME", desc: "No spaces around =. Reference with $. Quotes matter: double quotes expand variables, single don't.", flags: [], tip: 'MSG="Hello $USER" ; echo "$MSG"' },
+      { name: "if/else", short: "conditional branching", syntax: "if [ condition ]; then\n  ...\nelse\n  ...\nfi", desc: "Conditional execution. Use [[ ]] for modern bash with string/regex tests.", flags: [], tip: 'if [[ -f file.txt ]]; then echo exists; fi' },
+      { name: "for loop", short: "iterate over list", syntax: "for i in list; do\n  ...\ndone", desc: "Iterates over a list of values, files, or command output.", flags: [], tip: "for f in *.py; do echo $f; done" },
+      { name: "while loop", short: "loop while condition true", syntax: "while [ condition ]; do\n  ...\ndone", desc: "Runs the loop body as long as the condition is true.", flags: [], tip: "while read line; do echo $line; done < file" },
+      { name: "functions", short: "define reusable blocks", syntax: "my_func() {\n  echo $1\n}", desc: "Encapsulate reusable logic. $1, $2 are positional arguments inside functions.", flags: [] },
+      { name: "$?", short: "last exit code", syntax: "cmd ; echo $?", desc: "Holds the exit status of the last command. 0 = success, non-zero = error.", flags: [] },
+      { name: "$()", short: "command substitution", syntax: "result=$(cmd)", desc: "Captures the output of a command into a variable. Modern replacement for backticks.", flags: [], tip: "TODAY=$(date +%Y-%m-%d)" },
+      { name: "source", short: "run script in current shell", syntax: "source file.sh", desc: "Executes a script in the current shell context, so its variables and functions persist.", flags: [], tip: "source ~/.bashrc  →  reload config without restarting" },
+      { name: "set", short: "shell options", syntax: "set [options]", desc: "Controls shell behavior. Essential for robust scripts.", flags: [{ f: "-e", d: "exit immediately on error" }, { f: "-u", d: "treat unset variables as error" }, { f: "-x", d: "print each command before running (debug)" }, { f: "-o pipefail", d: "fail if any pipe command fails" }], tip: "set -euo pipefail  →  safe script header" },
+    ]
+  },
+  {
+    tab: "07 · network",
+    label: "$ module_07 — networking",
+    cmds: [
+      { name: "curl", short: "transfer data via URLs", syntax: "curl [options] url", desc: "Fetches URLs. Supports HTTP, HTTPS, FTP, and more. Workhorse for API testing.", flags: [{ f: "-X", d: "HTTP method: -X POST" }, { f: "-H", d: "header: -H 'Content-Type: application/json'" }, { f: "-d", d: "data body: -d '{...}'" }, { f: "-o", d: "save to file" }, { f: "-s", d: "silent mode" }, { f: "-L", d: "follow redirects" }] },
+      { name: "wget", short: "download files from web", syntax: "wget [options] url", desc: "Downloads files from the web. Supports resuming and recursive downloads.", flags: [{ f: "-c", d: "continue interrupted download" }, { f: "-r", d: "recursive download" }, { f: "-q", d: "quiet mode" }] },
+      { name: "ssh", short: "secure shell connection", syntax: "ssh user@host", desc: "Opens an encrypted remote shell session. Foundation of remote server administration.", flags: [{ f: "-i", d: "identity file (private key)" }, { f: "-p", d: "port number" }, { f: "-L", d: "local port forwarding" }] },
+      { name: "scp", short: "secure copy over SSH", syntax: "scp src user@host:dest", desc: "Copies files between local and remote machines over SSH.", flags: [{ f: "-r", d: "recursive" }, { f: "-P", d: "port number" }] },
+      { name: "ping", short: "test network connectivity", syntax: "ping host", desc: "Sends ICMP echo packets to test if a host is reachable and measure latency.", flags: [{ f: "-c N", d: "send N packets then stop" }] },
+      { name: "netstat", short: "network connections", syntax: "netstat [options]", desc: "Shows network connections, routing tables, and interface stats.", flags: [{ f: "-tulpn", d: "TCP/UDP listening ports with PIDs" }], tip: "ss -tulpn  →  modern replacement for netstat" },
+      { name: "ifconfig", short: "network interface config", syntax: "ifconfig", desc: "Displays/configures network interfaces. Replaced by ip addr on modern Linux.", flags: [] },
+      { name: "rsync", short: "efficient file sync", syntax: "rsync [options] src dest", desc: "Transfers only changed parts of files. Far more efficient than scp for large syncs.", flags: [{ f: "-avz", d: "archive, verbose, compressed" }, { f: "--delete", d: "delete files not in source" }, { f: "--dry-run", d: "simulate without changes" }], tip: "rsync -avz ./project user@server:~/backup/" },
+    ]
+  },
+  {
+    tab: "08 · system",
+    label: "$ module_08 — system & disk",
+    cmds: [
+      { name: "df", short: "disk space usage", syntax: "df [options]", desc: "Reports available and used disk space for filesystems.", flags: [{ f: "-h", d: "human-readable (GB, MB)" }, { f: "-T", d: "show filesystem type" }] },
+      { name: "du", short: "directory size", syntax: "du [options] [path]", desc: "Estimates file/directory disk usage. Useful for finding what's consuming space.", flags: [{ f: "-h", d: "human-readable" }, { f: "-s", d: "summary total only" }, { f: "-d N", d: "limit depth to N levels" }], tip: "du -sh * | sort -rh | head -10" },
+      { name: "free", short: "memory usage", syntax: "free [options]", desc: "Displays total, used, and available RAM and swap space.", flags: [{ f: "-h", d: "human-readable" }, { f: "-m", d: "in megabytes" }] },
+      { name: "uname", short: "system information", syntax: "uname [options]", desc: "Prints system/kernel information.", flags: [{ f: "-a", d: "all info (kernel, arch, hostname)" }, { f: "-r", d: "kernel version only" }] },
+      { name: "uptime", short: "system uptime", syntax: "uptime", desc: "Shows how long the system has been running and load averages.", flags: [] },
+      { name: "lsof", short: "list open files", syntax: "lsof [options]", desc: "Lists all open files and the processes using them. Invaluable for debugging.", flags: [{ f: "-p PID", d: "files opened by process" }, { f: "-i :80", d: "process using port 80" }] },
+      { name: "crontab", short: "schedule recurring tasks", syntax: "crontab -e", desc: "Edits the cron job schedule for the current user. Format: min hr day mon dow cmd.", flags: [{ f: "-e", d: "edit crontab" }, { f: "-l", d: "list current crontab" }, { f: "-r", d: "remove crontab" }], tip: "0 2 * * * /scripts/backup.sh   →   daily at 2am" },
+      { name: "env", short: "environment variables", syntax: "env", desc: "Lists all environment variables. Also used to set variables for a single command.", flags: [], tip: "env PYTHONPATH=/app python script.py" },
+      { name: "export", short: "export variable to env", syntax: "export VAR=value", desc: "Makes a variable available to child processes/subshells.", flags: [] },
+    ]
+  }
+];
+
+const navTabs = document.getElementById('navTabs');
+const cmdGrid = document.getElementById('cmdGrid');
+const sectionLabel = document.getElementById('sectionLabel');
+const progressBar = document.getElementById('progressBar');
+
+let activeModule = 0;
+let expandedCards = {};
+
+function renderProgress() {
+  progressBar.innerHTML = modules.map((_, i) =>
+    `<div class="progress-seg ${i <= activeModule ? 'done' : ''}"></div>`
+  ).join('');
+}
+
+function renderTabs() {
+  navTabs.innerHTML = modules.map((m, i) =>
+    `<button class="tab-btn ${i === activeModule ? 'active' : ''}" onclick="switchModule(${i})">${m.tab}</button>`
+  ).join('');
+}
+
+function renderCmds(modIdx) {
+  const m = modules[modIdx];
+  sectionLabel.textContent = m.label;
+  cmdGrid.innerHTML = m.cmds.map((c, ci) => {
+    const key = `${modIdx}-${ci}`;
+    const isExp = !!expandedCards[key];
+    const flagsHtml = c.flags.length ? `<div class="cmd-flags">${c.flags.map(f =>
+      `<div class="flag-row"><span class="flag">${f.f}</span><span class="flag-desc">${f.d}</span></div>`
+    ).join('')}</div>` : '';
+    const tipHtml = c.tip ? `<div class="tip-box"><div class="tip-label">example</div><div class="tip-text">${c.tip}</div></div>` : '';
+    return `<div class="cmd-card ${isExp ? 'expanded' : ''}" onclick="toggleCard('${key}', this)">
+      <div class="cmd-top">
+        <span class="cmd-name">${c.name}</span>
+        <span class="cmd-short">${c.short}</span>
+        <span class="expand-icon">${isExp ? '▲' : '▼'}</span>
+      </div>
+      <div class="cmd-detail">
+        <div class="cmd-syntax">${c.syntax}</div>
+        <p class="cmd-desc">${c.desc}</p>
+        ${flagsHtml}${tipHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchModule(i) {
+  activeModule = i;
+  renderTabs();
+  renderProgress();
+  renderCmds(i);
+}
+
+function toggleCard(key, el) {
+  expandedCards[key] = !expandedCards[key];
+  el.classList.toggle('expanded');
+  el.querySelector('.expand-icon').textContent = expandedCards[key] ? '▲' : '▼';
+  el.querySelector('.cmd-detail').style.display = expandedCards[key] ? 'block' : 'none';
+}
+
+renderTabs();
+renderProgress();
+renderCmds(0);
+
+document.querySelectorAll('.cmd-detail').forEach(d => d.style.display = 'none');
+</script>
