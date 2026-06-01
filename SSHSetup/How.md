@@ -13,7 +13,8 @@ ls -al ~/.ssh
 
 ### **2. Generate a New SSH Key Pair**
 ```bash
-ssh-keygen -t ed25519 -C "your_email@example.com"
+ssh-keygen -t ed25519 -C "your_email@example.com" -f ~/.ssh/id_ed25519_hf
+
 ```
 - Replace `your_email@example.com` with your email (or any identifier).
 - Press `Enter` to accept the default file location (`~/.ssh/id_ed25519`).
