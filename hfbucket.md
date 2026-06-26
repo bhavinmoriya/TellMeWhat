@@ -1,5 +1,7 @@
 # Download model from HF Bucket
 
+**Note.** Kept the downloaded model name same as the one in the Bucket. You can always make changes as you wish.
+
 ```python
 from huggingface_hub import download_bucket_files
 def load_model(MODEL_PATH):
