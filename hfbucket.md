@@ -7,7 +7,7 @@ def load_model(MODEL_PATH):
     download_bucket_files(
         "bhavinmoriya/model_storage",
         files=[
-            (MODEL_PATH, MODEL_PATH),
+            (MODEL_PATH, MODEL_PATH), #(From: HF NAME OF THE MODEL, To: The name of the downloaded model you want)
             # ("audio_classifier_model.pth", MODEL_PATH),
             # ("config.json", "./local/config.json"),
         ],
