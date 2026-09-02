@@ -4,22 +4,22 @@
 
 - **Time average**: average of a quantity along a single trajectory over time.  
   Example for a process \(X(t)\):
-  \[
+  $\[
   \overline{X} = \lim_{T\to\infty} \frac{1}{T}\int_0^T X(t)\,dt.
-  \]  [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC11254532/)
+  \]$  [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC11254532/)
 
 - **Ensemble average**: average across many independent realizations (copies) of the process at a fixed time.  
-  \[
+  $\[
   \mathbb{E}[X(t)] = \text{average over the distribution of } X(t).
-  \]  [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC11254532/)
+  \]$  [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC11254532/)
 
 A process is **ergodic** (in the mean, or more strongly in all moments) if, for suitable functions \(f\),
 
-\[
+$\[
 \lim_{T\to\infty} \frac{1}{T}\int_0^T f(X(t))\,dt
 =
 \mathbb{E}[f(X)],
-\]
+\]$
 
 with probability 1. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC11254532/)
 
