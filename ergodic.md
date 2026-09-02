@@ -3,7 +3,7 @@
 ## Two key averages
 
 - **Time average**: average of a quantity along a single trajectory over time.  
-  Example for a process \(X(t)\):
+  Example for a process $\(X(t)\)$:
   $\[
   \overline{X} = \lim_{T\to\infty} \frac{1}{T}\int_0^T X(t)\,dt.
   \]$  [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC11254532/)
@@ -15,11 +15,13 @@
 
 A process is **ergodic** (in the mean, or more strongly in all moments) if, for suitable functions \(f\),
 
-$\[
+$
+\[
 \lim_{T\to\infty} \frac{1}{T}\int_0^T f(X(t))\,dt
 =
 \mathbb{E}[f(X)],
-\]$
+\]
+$
 
 with probability 1. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC11254532/)
 
